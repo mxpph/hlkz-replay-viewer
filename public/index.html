@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Maps</title>
+</head>
+
+<body>
+    <h1>Maps List</h1>
+    <table border="1" id="table">
+        <thead>
+            <tr>
+                <th>Map Name</th>
+                <th>Pure WR</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        fetch("https://hlkz.sourceruns.org/api/maps")
+            .then(r => r.json())
+            .then(data => {
+                const tbody = document.querySelector("#table tbody");
+                data.data.forEach(m => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                    <td><a href="map.html?map=${m.name}">${m.name}</a></td>
+                    <td>${m.pure_wr}</td>
+                `;
+                    tbody.appendChild(tr);
+                });
+            });
+    </script>
+</body>
+
+</html>

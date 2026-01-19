@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Run Details</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        .wrapper {
+            display: flex;
+            gap: 20px;
+        }
+
+        .list {
+            width: 40%;
+        }
+
+        .viewer {
+            width: 58%;
+            border: 1px solid black;
+            min-height: 400px;
+            padding: 10px;
+        }
+
+        #player-container {
+            width: 600px;
+            height: 450px;
+        }
+    </style>
+
+    <link rel="stylesheet" href="hlviewer.js.css">
+    <script type="module" src="hlviewer.min.js"></script>
+    <script defer>
+        let viewer;
+
+        const params = new URLSearchParams(window.location.search);
+        const mapName = params.get("map");
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("title").innerText = mapName;
+
+            viewer = HLViewer.init('#player-container', {
+                paths: {
+                    base: '/resources/',
+                    replays: '/resources/replays',
+                    maps: '/resources/maps',
+                    wads: '/resources/',
+                    skies: '/resources/gfx/env',
+                    sounds: '/resources/sound'
+                }
+            });
+
+            fetch(`https://hlkz.sourceruns.org/api/maps/${mapName}/pure`)
+                .then(r => r.json())
+                .then(json => {
+                    const tbody = document.querySelector("#runTable tbody");
+                    json.data.forEach((run, i) => {
+                        const tr = document.createElement("tr");
+                        const date = new Date(run.date * 1000).toLocaleDateString();
+                        const time = new Date(run.time * 1000).toISOString().substring(14, 23);
+
+                        tr.innerHTML = `
+                            <td>${i + 1}</td>
+                            <td>${run.name}</td>
+                            <td>${time}</td>
+                            <td>${date}</td>
+                            <td>
+                                <button onclick="viewRun('${run.id}', '${run.unique_id}', '${run.name}', '${time}')">
+                                    View
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        });
+
+        function viewRun(id, uniqueId, playerName, time) {
+            const msg = document.getElementById("msg");
+            msg.innerText = `Downloading replay and resources for ${playerName}...`;
+
+            fetch(`/api/prepare-run?id=${id}&mapName=${mapName}&uniqueId=${uniqueId}`)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        msg.innerText = "Ready.";
+                        startLibrary(res.replayFilename, res.mapName, playerName, time);
+                    } else {
+                        msg.innerText = "Error: " + (res.error || "Unknown");
+                    }
+                });
+        }
+
+        function startLibrary(runFile, mapName, playerName, time) {
+            document.getElementById("msg").innerText = "";
+            viewer.load(runFile);
+            viewer.setTitle(`${playerName} on ${mapName} done in ${time}`);
+        }
+    </script>
+</head>
+
+<body>
+    <h1 id="title">Map</h1>
+
+    <div class="wrapper">
+        <div class="list">
+            <table border="1" id="runTable" width="100%">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Time</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="viewer">
+            <h2>Replay Viewer</h2>
+            <div id="msg">Select a run.</div>
+            <div id="player-container"></div>
+        </div>
+    </div>
+</body>
+
+</html>
