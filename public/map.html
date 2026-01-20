@@ -1,42 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="dark">
 
 <head>
-    <title>Run Details</title>
-    <style>
-        body {
-            font-family: sans-serif;
-        }
-
-        .wrapper {
-            display: flex;
-            gap: 20px;
-        }
-
-        .list {
-            width: 40%;
-        }
-
-        .viewer {
-            width: 58%;
-            border: 1px solid black;
-            min-height: 400px;
-            padding: 10px;
-        }
-
-        #player-container {
-            width: 800px;
-            height: 600px;
-        }
-    </style>
-
-    <link rel="stylesheet" href="hlviewer.js.css">
+    <title>HLKZ Replay Viewer</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/pico.min.css">
+    <link rel="stylesheet" href="css/map.css">
+    <link rel="stylesheet" href="css/hlviewer.js.css">
     <script type="module" src="hlviewer.min.js"></script>
     <script defer>
         let viewer;
 
         const params = new URLSearchParams(window.location.search);
         const mapName = params.get("map");
+        document.title = `HLKZ Replay Viewer - ${mapName}`
 
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("title").innerText = mapName;
@@ -74,6 +52,7 @@
                         `;
                         tbody.appendChild(tr);
                     });
+                    document.getElementById("loading").hidden = true;
                 });
         });
 
@@ -102,30 +81,51 @@
 </head>
 
 <body>
-    <h1 id="title">Map</h1>
+    <main class="container-fluid">
+        <nav>
+            <ul>
+                <li><strong>HLKZ Replay Viewer</strong></li>
+            </ul>
+            <ul>
+                <li><a href="/" role="button" class="secondary">Back to List</a></li>
+            </ul>
+        </nav>
 
-    <div class="wrapper">
-        <div class="list">
-            <table border="1" id="runTable" width="100%">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Time</th>
-                        <th>Date</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+        <hgroup>
+            <h1 id="title">Loading...</h1>
+            <h2>Pure Runs</h2>
+        </hgroup>
 
-        <div class="viewer">
-            <h2>Replay Viewer</h2>
-            <div id="msg">Select a run.</div>
-            <div id="player-container"></div>
+        <div class="wrapper">
+            <div class="list">
+                <figure>
+                    <table role="grid" id="runTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Time</th>
+                                <th>Date</th>
+                                <th>View</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" id="loading"><progress /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </figure>
+            </div>
+
+            <div class="viewer">
+                <p id="msg"><small>Select a run to begin.</small></p>
+                <div id="player-container">
+                    Waiting for selection...
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
 </body>
 
 </html>

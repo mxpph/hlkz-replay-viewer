@@ -1,0 +1,30 @@
+:root {
+    --pico-form-element-spacing-vertical: 0.35rem;
+    --pico-font-size: 1rem;
+}
+
+.wrapper {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.list {
+    flex: 1;
+    min-width: 300px;
+}
+
+.viewer {
+    flex: 1;
+    min-width: 300px;
+    background: var(--card-background-color);
+    padding: var(--block-spacing-vertical) var(--block-spacing-horizontal);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-box-shadow);
+}
+
+#player-container {
+    width: 800px;
+    height: 600px;
+    border-radius: 4px;
+}

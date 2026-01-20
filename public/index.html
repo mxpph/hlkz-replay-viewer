@@ -1,36 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="dark">
 
 <head>
-    <title>Maps</title>
+    <title>HLKZ Replay Viewer - Maps</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/pico.min.css">
+    <link rel="stylesheet" href="css/index.css">
 </head>
 
 <body>
-    <h1>Maps List</h1>
-    <table border="1" id="table">
-        <thead>
-            <tr>
-                <th>Map Name</th>
-                <th>Pure WR</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <main class="container">
+        <h1>HLKZ Replay Viewer - Maps</h1>
+        <figure>
+            <table role="grid">
+                <thead>
+                    <tr>
+                        <th scope="col">Map Name</th>
+                        <th scope="col">Pure WR</th>
+                    </tr>
+                </thead>
+                <tbody id="mapBody">
+                    <tr>
+                        <td colspan="2" id="loading"><progress /></td>
+                    </tr>
+                </tbody>
+            </table>
+        </figure>
+    </main>
 
     <script>
         fetch("https://hlkz.sourceruns.org/api/maps")
             .then(r => r.json())
             .then(data => {
-                const tbody = document.querySelector("#table tbody");
+                const tbody = document.getElementById("mapBody");
                 data.data.forEach(m => {
                     const tr = document.createElement("tr");
                     const time = new Date(m.pure_wr * 1000).toISOString().substring(14, 23)
                     tr.innerHTML = `
                     <td><a href="map.html?map=${m.name}">${m.name}</a></td>
                     <td>${time}</td>
-                `;
+                    `;
                     tbody.appendChild(tr);
                 });
+                document.getElementById("loading").hidden = true;
             });
     </script>
 </body>
