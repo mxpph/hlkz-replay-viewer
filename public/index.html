@@ -24,9 +24,10 @@
                 const tbody = document.querySelector("#table tbody");
                 data.data.forEach(m => {
                     const tr = document.createElement("tr");
+                    const time = new Date(m.pure_wr * 1000).toISOString().substring(14, 23)
                     tr.innerHTML = `
                     <td><a href="map.html?map=${m.name}">${m.name}</a></td>
-                    <td>${m.pure_wr}</td>
+                    <td>${time}</td>
                 `;
                     tbody.appendChild(tr);
                 });
