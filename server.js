@@ -118,6 +118,9 @@ app.get('/api/prepare-run', checkOrigin, async (req, res) => {
             const zip = new AdmZip(zipPath);
             zip.extractAllTo(path.join(__dirname, 'resources'), true);
             fs.unlinkSync(zipPath);
+            fs.rmSync(path.join(__dirname, 'resources', 'sound'), { recursive: true, force: true });
+            fs.rmSync(path.join(__dirname, 'resources', 'sounds'), { recursive: true, force: true });
+            fs.rmSync(path.join(__dirname, 'resources', 'models'), { recursive: true, force: true });
         }
 
         res.json({
