@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
-const rateLimit = require('express-rate-limit');
+const { rateLimit } = require('express-rate-limit');
 const axios = require('axios');
 const cors = require('cors');
 const { HttpStatusCode } = axios
@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
 const util = require('util');
+const { glob } = require('glob')
 
 const app = express();
 const pipeline = util.promisify(stream.pipeline);
@@ -62,11 +63,22 @@ async function downloadFile(url, outputPath) {
     await pipeline(response.data, writer);
 }
 
+async function deleteMatchingFiles(pattern) {
+    console.log(`[INFO] Deleting files matching: ${pattern}`);
+    const files = await glob(pattern, { nodir: true });
+    await Promise.all(files.map(file => fs.unlink(file)));
+}
+
 app.get('/api/prepare-run', checkOrigin, async (req, res) => {
     const { id, mapName, uniqueId } = req.query;
 
     if (!id || !mapName || !uniqueId) {
         return res.status(HttpStatusCode.BadRequest).send("Missing id or mapName or uniqueId");
+    }
+
+    const idRegex = /^\d+$/
+    if (!idRegex.test(id)) {
+        return res.status(HttpStatusCode.BadRequest).send("Invalid id format");
     }
     const mapNameRegex = /^[a-zA-Z0-9_\-\[\]]+$/;
     if (!mapNameRegex.test(mapName)) {
@@ -79,19 +91,21 @@ app.get('/api/prepare-run', checkOrigin, async (req, res) => {
 
     try {
         console.log(`[INFO] Request for: Map=${mapName}, ID=${uniqueId}`);
-        const parts = uniqueId.split(':');
-        if (parts.length !== 3) {
+        const sid = uniqueId.split(':');
+        if (sid.length !== 3) {
             throw new Error("Invalid SteamID format");
         }
-        const replayFilename = `${mapName}_${parts[0].split('_')[1]}_${parts[1]}_${parts[2]}_pure.dat`;
-        const replayUrl = `${REPLAY_SERVER_URL}/${replayFilename}`;
-        const localReplayPath = path.join(__dirname, 'resources', 'replays', replayFilename);
-        // TODO use run id to differentiate between later versions of same replay 
+        sid[0] = sid[0].split('_')[1]
+        const replayPrefix = `${mapName}_${sid[0]}_${sid[1]}_${sid[2]}_pure`
+        const replayLocalFilename = `${replayPrefix}_${id}.dat`;
+        const replayUrl = `${REPLAY_SERVER_URL}/${replayPrefix}.dat`;
+        const localReplayPath = path.join(__dirname, 'resources', 'replays', replayLocalFilename);
         if (!fs.existsSync(localReplayPath)) {
+            await deleteMatchingFiles(RegExp.escape(`${replayPrefix}_*.dat`));
             console.log(`[DL] Downloading replay from: ${replayUrl}`);
             await downloadFile(replayUrl, localReplayPath);
         } else {
-            console.log(`[CACHE] Map and replay file found: ${replayFilename}`);
+            console.log(`[CACHE] Map and replay file found: ${replayPrefix}.dat`);
         }
 
         const mapResourceDir = path.join(__dirname, 'resources', 'maps', `${mapName}.bsp`);
@@ -108,7 +122,7 @@ app.get('/api/prepare-run', checkOrigin, async (req, res) => {
 
         res.json({
             success: true,
-            replayFilename,
+            replayFilename: replayLocalFilename,
             mapName,
         });
 
