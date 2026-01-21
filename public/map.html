@@ -14,6 +14,16 @@
 
         const params = new URLSearchParams(window.location.search);
         const mapName = params.get("map");
+        const mapNameRegex = /^[a-zA-Z0-9_\-\[\]]+$/;
+        if (!mapName || !mapNameRegex.test(mapName)) {
+            document.body.innerHTML = `
+            <main class='container'>
+                <h1>Error</h1>
+                <p>Invalid or missing map name.</p>
+                <a href='/'>Go Home</a>
+            </main>`;
+            throw new Error("Invalid map name");
+        }
         document.title = `HLKZ Replay Viewer - ${mapName}`
 
         document.addEventListener("DOMContentLoaded", () => {
