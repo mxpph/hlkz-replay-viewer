@@ -131,7 +131,7 @@ app.get('/api/prepare-run', checkOrigin, async (req, res) => {
 
     } catch (error) {
         console.error("[ERROR]", error.message);
-        res.status(HttpStatusCode.InternalServerError).json({ success: false, error: error.message });
+        res.status(HttpStatusCode.InternalServerError).json({ success: false, error: "Failed to download run. Please try again later." });
     }
 });
 
