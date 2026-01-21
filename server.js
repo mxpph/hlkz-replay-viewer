@@ -42,13 +42,17 @@ const checkOrigin = (req, res, next) => {
 // Max 15 download requests every 5 minute per IP
 const downloadLimiter = rateLimit({
     windowMs: 5 * 60 * 1000,
-    max: 15,
+    limit: 15,
     message: "Too many downloads, please try again after 5 minutes"
 });
 
 app.use(cors(corsOptions))
 app.use(express.static('public'));
-app.use('/resources', express.static('resources'));
+app.use('/resources', express.static('resources', {
+    etag: true,
+    immutable: true,
+    maxAge: 365 * 24 * 60 * 60 * 1000,
+}));
 app.use('/downloads', express.static('downloads'));
 app.use('/api/prepare-run', downloadLimiter);
 app.disable('x-powered-by');
@@ -92,16 +96,13 @@ app.get('/api/prepare-run', checkOrigin, async (req, res) => {
     try {
         console.log(`[INFO] Request for: Map=${mapName}, ID=${uniqueId}`);
         const sid = uniqueId.split(':');
-        if (sid.length !== 3) {
-            throw new Error("Invalid SteamID format");
-        }
         sid[0] = sid[0].split('_')[1]
         const replayPrefix = `${mapName}_${sid[0]}_${sid[1]}_${sid[2]}_pure`
         const replayLocalFilename = `${replayPrefix}_${id}.dat`;
         const replayUrl = `${REPLAY_SERVER_URL}/${replayPrefix}.dat`;
         const localReplayPath = path.join(__dirname, 'resources', 'replays', replayLocalFilename);
         if (!fs.existsSync(localReplayPath)) {
-            await deleteMatchingFiles(RegExp.escape(`${replayPrefix}_*.dat`));
+            await deleteMatchingFiles(`${RegExp.escape(replayPrefix)}_*\\.dat`);
             console.log(`[DL] Downloading replay from: ${replayUrl}`);
             await downloadFile(replayUrl, localReplayPath);
         } else {
