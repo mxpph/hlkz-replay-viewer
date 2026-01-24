@@ -12,4 +12,6 @@ RUN mkdir -p downloads resources/maps resources/replays && \
 
 USER node
 
+ENV LOGLEVEL="debug"
+
 CMD ["node", "server.js"]
