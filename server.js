@@ -88,6 +88,7 @@ async function downloadMapFiles(mapName) {
         const zip = new AdmZip(outputPrefix);
         zip.extractAllTo(path.join(__dirname, 'resources'), true);
         fs.unlinkSync(outputPrefix);
+        fs.rmSync(path.join(__dirname, 'resources', 'maps', `${mapName}.res`), { force: true });
         fs.rmSync(path.join(__dirname, 'resources', 'sound'), { recursive: true, force: true });
         fs.rmSync(path.join(__dirname, 'resources', 'sounds'), { recursive: true, force: true });
         fs.rmSync(path.join(__dirname, 'resources', 'models'), { recursive: true, force: true });
