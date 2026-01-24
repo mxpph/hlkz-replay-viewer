@@ -7,7 +7,7 @@ RUN npm install
 
 COPY . .
 
-RUN mkdir -p downloads resources/replays && \
+RUN mkdir -p downloads resources/maps resources/replays && \
     chown -R node:node /app
 
 USER node
