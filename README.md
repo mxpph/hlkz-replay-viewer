@@ -2,6 +2,8 @@
 
 View HLKZ replays in the browser.
 
+**Check it out at https://hlkz.xgilli.me/**
+
 ![Screenshot of the HLKZ replay viewer](image.jpg)
 
 ## Usage
